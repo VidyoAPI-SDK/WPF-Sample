@@ -134,7 +134,8 @@ namespace VidyoAnalytics.ViewModel
             isInsightsServiceStarted = false;
             IsServerUrlBoxEnabled = IsInsightsStartButtonEnabled = true;
             IsInsightsStopButtonEnabled = false;
-            IsTrackingIdBoxEnabled = IsGoogleAnalyticsStartButtonEnabled = true;
+            IsTrackingIdBoxEnabled = false;
+            IsGoogleAnalyticsStartButtonEnabled = true;
             IsGoogleAnalyticsStopButtonEnabled = false;
         }
 

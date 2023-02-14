@@ -113,6 +113,9 @@ namespace VidyoConnector.ViewModel
         public ShareModelWindowNotify notifyWindowRemoved { get; set; }
         public ShareModelWindowNotify notifyWindowStateUpdated { get; set; }
 
+        LocalWindowShareListener localWindowShareListener;
+        LocalMonitorListener localMonitorListener;
+
         public VidyoConnectorShareViewModel()
         {
             _itemsLock = new object();
@@ -122,14 +125,17 @@ namespace VidyoConnector.ViewModel
 
             BindingOperations.EnableCollectionSynchronization(LocalWindows, _itemsLock);
             BindingOperations.EnableCollectionSynchronization(LocalMonistors, _itemsLock);
+
+            localWindowShareListener = new LocalWindowShareListener(this);
+            localMonitorListener = new LocalMonitorListener(this);
         }
 
         internal void Init()
         {
             isMonitorSharing = false;
             isWindowSharing = false;
-            GetConnectorInstance.RegisterLocalMonitorEventListener(new LocalMonitorListener(this));
-            GetConnectorInstance.RegisterLocalWindowShareEventListener(new LocalWindowShareListener(this));
+            GetConnectorInstance.RegisterLocalMonitorEventListener(localMonitorListener);
+            GetConnectorInstance.RegisterLocalWindowShareEventListener(localWindowShareListener);
         }
 
         internal void Uninit()

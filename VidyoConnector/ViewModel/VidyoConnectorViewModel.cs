@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -40,6 +40,18 @@ namespace VidyoConnector.ViewModel
 
         private VidyoConferenceModerationViewModel confViewModel;
         private VidyoConnectorShareViewModel conferenceShareViewModel;
+
+        ConnectionListener connectionListener;
+        ConferenceModeListener conferenceModeListener;
+        LocalCameraListener localCameraListener;
+        LocalMicrophoneListener localMicrophoneListener;
+        LocalSpeakerListener localSpeakerListener;
+        VirtualAudioSourceListener virtualAudioSourceListener;
+        ConnectionPropertiesListener connectionPropertiesListener;
+        LectureModeListener lectureModeListener;
+        ParticipantListener participantListener;
+        ModerationCommandListener moderationCommandListener;
+        MessageListener messageListener;
 
         public VidyoConnectorViewModel()
         {
@@ -1115,7 +1127,6 @@ namespace VidyoConnector.ViewModel
                     JoinCall();
                     break;
                 case ConnectionState.Connected:
-                case ConnectionState.OperationInProgress:
                     ConnectionState = ConnectionState.OperationInProgress;
                     Log.Info("Leaving call...");
                     LeaveCall();
@@ -1134,11 +1145,11 @@ namespace VidyoConnector.ViewModel
                     if (_userLoginType == UserLoginType.AsUser)
                     {
                         res = _connector.ConnectToRoomWithKey(Portal
-                            , UserName, Password, RoomKey, RoomPin, new ConnectionListener(this));
+                            , UserName, Password, RoomKey, RoomPin, connectionListener);
                     }
                     else if (_userLoginType == UserLoginType.AsGuest)
                     {
-                        res = _connector.ConnectToRoomAsGuest(Portal, DisplayName, RoomKey, RoomPin, new ConnectionListener(this));
+                        res = _connector.ConnectToRoomAsGuest(Portal, DisplayName, RoomKey, RoomPin, connectionListener);
                     }
                 }
                 Log.DebugFormat("Returned '{0}'", res);
@@ -1155,8 +1166,6 @@ namespace VidyoConnector.ViewModel
         {
             _connector.Disconnect();
             Log.Info("Attempted to disconnect.");
-
-            ConnectionState = ConnectionState.NotConnected;
         }
 
         private void CleanUp()
@@ -1468,17 +1477,29 @@ namespace VidyoConnector.ViewModel
         
         public bool VidyoConnectoRegisterCallbacks()
         {
+            connectionListener = new ConnectionListener(this);
+            conferenceModeListener = new ConferenceModeListener(this);
+            localCameraListener = new LocalCameraListener(this);
+            localMicrophoneListener = new LocalMicrophoneListener(this);
+            localSpeakerListener = new LocalSpeakerListener(this);
+            virtualAudioSourceListener = new VirtualAudioSourceListener(this);
+            connectionPropertiesListener = new ConnectionPropertiesListener(this);
+            lectureModeListener = new LectureModeListener(this);
+            participantListener = new ParticipantListener(this);
+            moderationCommandListener = new ModerationCommandListener(this);
+            messageListener = new MessageListener(this);
+
             try {
-                if (!_connector.RegisterLocalCameraEventListener(new LocalCameraListener(this))) throw new Exception("LocalCameraEventListener");
-                if (!_connector.RegisterLocalMicrophoneEventListener(new LocalMicrophoneListener(this))) throw new Exception("LocalMicrophoneEventListener");
-                if (!_connector.RegisterLocalSpeakerEventListener(new LocalSpeakerListener(this))) throw new Exception("LocalSpeakerEventListener");
-                if (!_connector.RegisterVirtualAudioSourceEventListener(new VirtualAudioSourceListener(this))) throw new Exception("VirtualAudioSourceEventListener");
-                if (!_connector.RegisterConnectionPropertiesEventListener(new ConnectionPropertiesListener(this))) throw new Exception("ConnectionPropertiesEventListener");
-                if (!_connector.RegisterConferenceModeEventListener(new ConferenceModeListener(this))) throw new Exception("ConferenceModeEventListener");
-                if (!_connector.RegisterLectureModeEventListener(new LectureModeListener(this))) throw new Exception("LectureModeEventListener");
-                if (!_connector.RegisterParticipantEventListener(new ParticipantListener(this))) throw new Exception("ParticipantEventListener");
-                if (!_connector.RegisterModerationCommandEventListener(new ModerationCommandListener(this))) throw new Exception("ModerationCommandEventListener");
-                if (!_connector.RegisterMessageEventListener(new MessageListener(this))) throw new Exception("MessageEventListener");
+                if (!_connector.RegisterLocalCameraEventListener(localCameraListener)) throw new Exception("LocalCameraEventListener");
+                if (!_connector.RegisterLocalMicrophoneEventListener(localMicrophoneListener)) throw new Exception("LocalMicrophoneEventListener");
+                if (!_connector.RegisterLocalSpeakerEventListener(localSpeakerListener)) throw new Exception("LocalSpeakerEventListener");
+                if (!_connector.RegisterVirtualAudioSourceEventListener(virtualAudioSourceListener)) throw new Exception("VirtualAudioSourceEventListener");
+                if (!_connector.RegisterConnectionPropertiesEventListener(connectionPropertiesListener)) throw new Exception("ConnectionPropertiesEventListener");
+                if (!_connector.RegisterConferenceModeEventListener(conferenceModeListener)) throw new Exception("ConferenceModeEventListener");
+                if (!_connector.RegisterLectureModeEventListener(lectureModeListener)) throw new Exception("LectureModeEventListener");
+                if (!_connector.RegisterParticipantEventListener(participantListener)) throw new Exception("ParticipantEventListener");
+                if (!_connector.RegisterModerationCommandEventListener(moderationCommandListener)) throw new Exception("ModerationCommandEventListener");
+                if (!_connector.RegisterMessageEventListener(messageListener)) throw new Exception("MessageEventListener");
 
                 Log.Info("Registered VidyoConnector callbacks.");
                 return true;
@@ -1504,6 +1525,18 @@ namespace VidyoConnector.ViewModel
                 if (!_connector.UnregisterParticipantEventListener()) throw new Exception("ParticipantEventListener");
                 if (!_connector.UnregisterModerationCommandEventListener()) throw new Exception("ModerationCommandEventListener");
                 if (!_connector.UnregisterMessageEventListener()) throw new Exception("MessageEventListener");
+
+                connectionListener = null;
+                conferenceModeListener = null;
+                localCameraListener = null;
+                localMicrophoneListener = null;
+                localSpeakerListener = null;
+                virtualAudioSourceListener = null;
+                connectionPropertiesListener = null;
+                lectureModeListener = null;
+                participantListener = null;
+                moderationCommandListener = null;
+                messageListener = null;
 
                 Log.Info("Unregistered VidyoConnector callbacks.");
                 return true;

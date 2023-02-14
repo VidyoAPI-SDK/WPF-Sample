@@ -1,0 +1,15 @@
+.svn
+bin
+build
+obj
+Debug
+Release
+Release?Using?DLL
+Win32
+x64
+?*.opensdf
+?*.sdf
+?*.suo
+?*.*proj.user
+.vs
+*.pfx

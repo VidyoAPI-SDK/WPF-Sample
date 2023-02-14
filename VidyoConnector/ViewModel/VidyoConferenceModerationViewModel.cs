@@ -179,6 +179,11 @@ namespace VidyoConferenceModeration.ViewModel
         bool localUserHardCameraMuteStatus;
         Participant localParticipantInfo;
         ConferenceModerationWindow confModerationWindow;
+        ModerationResultListener moderationResultListener;
+        HandResponseListener handResponseListener;
+        RecordingProfileListener recordingProfileListener;
+        RemoteCameraListener remoteCameraListener;
+        RemoteMicrophoneListener remoteMicrophoneListener;
 
         public VidyoConferenceModerationViewModel(object DataContext = null)
         {
@@ -205,16 +210,21 @@ namespace VidyoConferenceModeration.ViewModel
 
         public void Init(ConferenceModerationWindow conf)
         {
-            GetConnectorInstance.RegisterRemoteCameraEventListener(new RemoteCameraListener(this));
-            GetConnectorInstance.RegisterRemoteMicrophoneEventListener(new RemoteMicrophoneListener(this));
+            moderationResultListener = new ModerationResultListener(this);
+            remoteCameraListener = new RemoteCameraListener(this);
+            remoteMicrophoneListener = new RemoteMicrophoneListener(this);
+
+            GetConnectorInstance.RegisterRemoteCameraEventListener(remoteCameraListener);
+            GetConnectorInstance.RegisterRemoteMicrophoneEventListener(remoteMicrophoneListener);
             confModerationWindow = conf;
             RecordingProfileItemList.Clear();
             recordingProfileList.Clear();
             if (GetLocalParticipantClearanceType() != ParticipantClearanceType.ParticipantCLEARANCETYPE_None)
             {
-                GetConnectorInstance.GetRecordingServiceProfiles(new RecordingProfileListener(this));
+                recordingProfileListener = new RecordingProfileListener(this);
+                GetConnectorInstance.GetRecordingServiceProfiles(recordingProfileListener);
             }
-            GetConnectorInstance.RegisterModerationResultEventListener(new ModerationResultListener(this));
+            GetConnectorInstance.RegisterModerationResultEventListener(moderationResultListener);
             confModerationWindow.SetIsModerationPIN(hasModeratorPin);
             confModerationWindow.SetIsRoomPIN(hasRoomPin);
         }
@@ -234,6 +244,10 @@ namespace VidyoConferenceModeration.ViewModel
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                 Clear()));
             }
+
+            moderationResultListener = null;
+            remoteCameraListener = null;
+            remoteMicrophoneListener = null;
         }
 
         public ParticipantClearanceType GetLocalParticipantClearanceType()
@@ -393,7 +407,8 @@ namespace VidyoConferenceModeration.ViewModel
         {
             if (!IsRaisedHand)
             {
-                if (!GetConnectorInstance.RaiseHand(new HandResponseListener(this), "RaiseHand"))
+                handResponseListener = new HandResponseListener(this);
+                if (!GetConnectorInstance.RaiseHand(handResponseListener, "RaiseHand"))
                 {
                     DisplayErrorMessageForAPI("Moderation", "Failed to Raised Hand");
                 }
@@ -426,12 +441,12 @@ namespace VidyoConferenceModeration.ViewModel
             {
                 if (indexRecordingProfile == -1)
                 {
-                    retValue = GetConnectorInstance.StartRecording(null, new ModerationResultListener(this));
+                    retValue = GetConnectorInstance.StartRecording(null, moderationResultListener);
                 }
                 else
                 {
                     String prefix = recordingProfileList[indexRecordingProfile].Item3;
-                    retValue = GetConnectorInstance.StartRecording(prefix, new ModerationResultListener(this));
+                    retValue = GetConnectorInstance.StartRecording(prefix, moderationResultListener);
                 }
                 if (!retValue)
                 {
@@ -455,7 +470,7 @@ namespace VidyoConferenceModeration.ViewModel
             {
                 if (!IsRecordingPaused)
                 {
-                    retValue = GetConnectorInstance.PauseRecording(new ModerationResultListener(this));
+                    retValue = GetConnectorInstance.PauseRecording(moderationResultListener);
                     if (!retValue)
                     {
                         DisplayErrorMessageForAPI("Moderation", "Failed to Pause Recording");
@@ -463,7 +478,7 @@ namespace VidyoConferenceModeration.ViewModel
                 }
                 else
                 {
-                    retValue = GetConnectorInstance.ResumeRecording(new ModerationResultListener(this));
+                    retValue = GetConnectorInstance.ResumeRecording(moderationResultListener);
                     if (!retValue)
                     {
                         DisplayErrorMessageForAPI("Moderation", "Failed to Resume Recording");
@@ -485,7 +500,7 @@ namespace VidyoConferenceModeration.ViewModel
 
             if (IsRecordingStarted)
             {
-                retValue = GetConnectorInstance.StopRecording(new ModerationResultListener(this));
+                retValue = GetConnectorInstance.StopRecording(moderationResultListener);
                 if (!retValue)
                 {
                     DisplayErrorMessageForAPI("Moderation", "Failed to Stop Recording");
@@ -2394,7 +2409,7 @@ namespace VidyoConferenceModeration.ViewModel
                 return;
             }
 
-            if (!GetConnectorInstance.SetRoomPIN(RoomPIN, new ModerationResultListener(this)))
+            if (!GetConnectorInstance.SetRoomPIN(RoomPIN, moderationResultListener))
             {
                 DisplayErrorMessageForAPI("Room Pin", "Failed to Set Room PIN");
             }
@@ -2409,7 +2424,7 @@ namespace VidyoConferenceModeration.ViewModel
                 return;
             }
 
-            if (!GetConnectorInstance.RemoveRoomPIN(new ModerationResultListener(this)))
+            if (!GetConnectorInstance.RemoveRoomPIN(moderationResultListener))
             {
                 DisplayErrorMessageForAPI("Room Pin", "Failed to Remove Room PIN");
             }
@@ -2473,7 +2488,7 @@ namespace VidyoConferenceModeration.ViewModel
                 return;
             }
 
-            if (!GetConnectorInstance.LockRoom(new ModerationResultListener(this)))
+            if (!GetConnectorInstance.LockRoom(moderationResultListener))
             {
                 IsUnlockRoom = true;
                 DisplayErrorMessageForAPI("Lock Room", "Failed to Lock Room");
@@ -2493,7 +2508,7 @@ namespace VidyoConferenceModeration.ViewModel
                 return;
             }
 
-            if (!GetConnectorInstance.UnlockRoom(new ModerationResultListener(this)))
+            if (!GetConnectorInstance.UnlockRoom(moderationResultListener))
             {
                 IsLockRoom = true;
                 DisplayErrorMessageForAPI("Lock Room", "Failed to Unlock Room");
@@ -2520,7 +2535,7 @@ namespace VidyoConferenceModeration.ViewModel
                 ModeratorPinDialog moderatorDialog = new ModeratorPinDialog();
                 if (moderatorDialog.ShowDialog() == true)
                 {
-                    retValue = GetConnectorInstance.RequestModeratorRole(moderatorDialog.ModeratorPin, new ModerationResultListener(this));
+                    retValue = GetConnectorInstance.RequestModeratorRole(moderatorDialog.ModeratorPin, moderationResultListener);
                 }
                 else
                 {
@@ -2530,7 +2545,7 @@ namespace VidyoConferenceModeration.ViewModel
             }
             else
             {
-                retValue = GetConnectorInstance.RequestModeratorRole(null, new ModerationResultListener(this));
+                retValue = GetConnectorInstance.RequestModeratorRole(null, moderationResultListener);
             }
 
             if (!retValue)
@@ -2549,7 +2564,7 @@ namespace VidyoConferenceModeration.ViewModel
                 return;
             }
             
-            if (!GetConnectorInstance.RemoveModeratorRole(new ModerationResultListener(this)))
+            if (!GetConnectorInstance.RemoveModeratorRole(moderationResultListener))
             {
                 IsRoleModerator = true;
                 DisplayErrorMessageForAPI("Moderator Role", "Failed to Remove Moderator Role");
@@ -2658,6 +2673,8 @@ namespace VidyoConferenceModeration.ViewModel
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                         GetRecordingServiceProfilesCallBackProcess(profiles, prefixes, result)));
+
+            recordingProfileListener = null;
         }
 
         public void OnRecordingServiceStartResult(ConnectorModerationResult result)
@@ -2688,6 +2705,8 @@ namespace VidyoConferenceModeration.ViewModel
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                     RaiseHandResponseCallBackProcess(handState)));
+
+            handResponseListener = null;
         }
 
         public void OnParticipantJoined(Participant participant)

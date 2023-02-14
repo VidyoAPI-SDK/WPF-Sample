@@ -40,6 +40,8 @@ namespace SearchUsersDialog.ViewModel
         String SearchText;
         List<ContactInfo> inviteParticipantlist;
         object _itemsLock;
+        InviteUserListener inviteUserListener;
+        SearchUsersListener searchUsersListener;
 
         public SearchUsersDialogViewModel()
         {
@@ -94,7 +96,8 @@ namespace SearchUsersDialog.ViewModel
 
         public void SearchUser()
         {
-            if(!GetConnectorInstance.SearchUsers(SearchText, StartIndex, RecordsRequested, new SearchUsersListener(this)))
+            searchUsersListener = new SearchUsersListener(this);
+            if (!GetConnectorInstance.SearchUsers(SearchText, StartIndex, RecordsRequested, searchUsersListener))
             {
                 return;
             }
@@ -115,8 +118,8 @@ namespace SearchUsersDialog.ViewModel
                 contactInfo = inviteParticipantlist.First();
                 inviteParticipantlist.RemoveAt(0);
             }
-
-            retValue = GetConnectorInstance.InviteParticipant(contactInfo, InvitationMessage, new InviteUserListener(this));
+            inviteUserListener = new InviteUserListener(this);
+            retValue = GetConnectorInstance.InviteParticipant(contactInfo, InvitationMessage, inviteUserListener);
             if (!retValue)
             {
                 String msg = "Failed to Invite User : " + contactInfo.name;
@@ -188,12 +191,16 @@ namespace SearchUsersDialog.ViewModel
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                 UserSearchResultsCallBackProcess(searchText, startIndex, searchResult, contacts, numRecords)));
+
+            searchUsersListener = null;
         }
 
         public void OnInviteResult(string inviteeId, ConnectorModerationResult result)
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                 InviteResultCallBackProcess(inviteeId, result)));
+
+            inviteUserListener = null;
         }
 
         private string _searchUserResults;
