@@ -48,7 +48,7 @@ namespace VidyoConferenceModeration.ViewModel
     public class ParticipantItemElemt : INotifyPropertyChanged
     {
         public string ParticipantName { get; set; }
-        public string ParticipantUserId { get; set; }
+        public string ParticipantId { get; set; }
         public string ParticipantType { get; set; }
 
         public bool ParticipantMicStatus { get; set; }
@@ -64,13 +64,13 @@ namespace VidyoConferenceModeration.ViewModel
         public string ParticipantCameraPresetAvailable { get; set; }
         public bool ParticipantCameraViscaStatus { get; set; }
         public string ParticipantCameraViscaSupported { get; set; }
-        public ParticipantItemElemt(string participantName, string participantUserId, string participantType,
+        public ParticipantItemElemt(string participantName, string participantId, string participantType,
             bool participantMicStatus, bool participantCameraStatus,
             bool participantIsPresenter, bool participantHandStatus, bool participantHardMuteUnmuteMicStatus,
             bool participantHardMuteUnmuteCameraStatus, bool participantConnectStatus)
         {
             this.ParticipantName = participantName;
-            this.ParticipantUserId = participantUserId;
+            this.ParticipantId = participantId;
             this.ParticipantType = participantType;
 
             this.ParticipantMicStatus = participantMicStatus;
@@ -163,6 +163,45 @@ namespace VidyoConferenceModeration.ViewModel
         }
     }
 
+    public class BotItemElemt : INotifyPropertyChanged
+    {
+        public string BotName { get; set; }
+        public string BotId { get; set; }
+        public string BotData { get; set; }
+
+        public BotItemElemt(string botName, string botId, string botData)
+        {
+            this.BotName = botName;
+            this.BotId = botId;
+            this.BotData = botData;
+        }
+
+        public void BotItemElemt_SetBotName(string botName)
+        {
+            this.BotName = botName;
+            NotifyPropertyChanged("BotName");
+        }
+
+        public void BotItemElemt_SetBotId(string botId)
+        {
+            this.BotId = botId;
+            NotifyPropertyChanged("BotId");
+        }
+
+        public void BotItemElemt_SetBotData(string botData)
+        {
+            this.BotData = botData;
+            NotifyPropertyChanged("BotData");
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void NotifyPropertyChanged(string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
     public class VidyoConferenceModerationViewModel : VidyoConnectorViewModel, INotifyPropertyChanged
     {
         private object DataContext;
@@ -170,7 +209,7 @@ namespace VidyoConferenceModeration.ViewModel
         List<Tuple<int, String, String>> recordingProfileList;
         List <KeyValuePair<String, Participant>> participantList;
         object _itemsLock;
-        String presenterUserId;
+        String presenterId;
         bool hasModeratorPin;
         bool hasRoomPin;
         bool localUserMicStatus;
@@ -194,8 +233,10 @@ namespace VidyoConferenceModeration.ViewModel
             ParticipantItemList = new ObservableCollection<ParticipantItemElemt>();
             recordingProfileList = new List<Tuple<int, string, string>>();
             participantList = new List<KeyValuePair<String, Participant>>();
+            BotItemList = new ObservableCollection<BotItemElemt>();
 
             BindingOperations.EnableCollectionSynchronization(ParticipantItemList, _itemsLock);
+            BindingOperations.EnableCollectionSynchronization(BotItemList, _itemsLock);
 
 
             ParticipantCount = "Participants(0)";
@@ -257,11 +298,11 @@ namespace VidyoConferenceModeration.ViewModel
             return localParticipantInfo.GetClearanceType();
         }
 
-        public String GetLocalParticipantUserId()
+        public String GetLocalparticipantId()
         {
             if (localParticipantInfo == null)
                 return null;
-            return localParticipantInfo.GetUserId();
+            return localParticipantInfo.GetId();
         }
 
         public Participant GetLocalParticipantInfo()
@@ -275,7 +316,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == GetLocalParticipantUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == GetLocalparticipantId());
                 if (item != null)
                 {
                     return item.ParticipantHardMuteUnmuteMicStatus;
@@ -288,7 +329,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == GetLocalParticipantUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == GetLocalparticipantId());
                 if (item != null)
                 {
                     return item.ParticipantHardMuteUnmuteCameraStatus;
@@ -305,6 +346,7 @@ namespace VidyoConferenceModeration.ViewModel
                 recordingProfileList.Clear();
                 ParticipantItemList.Clear();
                 participantList.Clear();
+                BotItemList.Clear();
             }
         }
 
@@ -666,7 +708,7 @@ namespace VidyoConferenceModeration.ViewModel
             return retValue;
         }
 
-        public bool VidyoConferenceModerationViewModel_ParticipantCommand(String participantUserId, ParticipantCommandType participantCommand)
+        public bool VidyoConferenceModerationViewModel_ParticipantCommand(String participantId, ParticipantCommandType participantCommand)
         {
             bool retValue = false;
 
@@ -698,8 +740,8 @@ namespace VidyoConferenceModeration.ViewModel
 
             lock (_itemsLock)
             {
-                Participant participant = participantList.First(kvp => kvp.Key == participantUserId).Value;
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participantUserId);
+                Participant participant = participantList.First(kvp => kvp.Key == participantId).Value;
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participantId);
                 String message;
                 if (item != null)
                 {
@@ -842,13 +884,13 @@ namespace VidyoConferenceModeration.ViewModel
         public void ParticipantJoinedCallBackProcess(Participant participant, bool isPresenter)
         {
             String participantName = participant.GetName();
-            String participantUserId = participant.GetUserId();
+            String participantId = participant.GetId();
             String participantStatus = "";
 
             ParticipantItemElemt item;
             lock (_itemsLock)
             {
-                item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participantUserId);
+                item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participantId);
             }
             if (item != null)
             {
@@ -887,7 +929,7 @@ namespace VidyoConferenceModeration.ViewModel
 
             lock (_itemsLock)
             {
-                participantList.Add(new KeyValuePair<String, Participant>(participantUserId, participant));
+                participantList.Add(new KeyValuePair<String, Participant>(participantId, participant));
                 bool micStatus = true, cameraStatus = true;
                 bool hardMuteMicStatus = ParticipantAllHardAudioMuteStatus;
                 bool hardMuteCameraStatus = ParticipantAllHardVideoMuteStatus;
@@ -906,7 +948,7 @@ namespace VidyoConferenceModeration.ViewModel
                 }
 
                 ParticipantItemList.Add(new ParticipantItemElemt(
-                    participantName, participantUserId, participantStatus, micStatus, cameraStatus, isPresenter, false, hardMuteMicStatus, hardMuteCameraStatus, false));
+                    participantName, participantId, participantStatus, micStatus, cameraStatus, isPresenter, false, hardMuteMicStatus, hardMuteCameraStatus, false));
                 ParticipantCount = "Participants(" + participantList.Count().ToString() + ")";
             }
         }
@@ -915,13 +957,12 @@ namespace VidyoConferenceModeration.ViewModel
         {
             String participantName = participant.GetName();
             String participantId = participant.GetId();
-            String participantUserId = participant.GetUserId();
             bool participantIsLocal = participant.IsLocal();
 
             lock (_itemsLock)
             {
-                participantList.Remove(new KeyValuePair<String, Participant>(participantUserId, participant));
-                ParticipantItemList.Remove(ParticipantItemList.Where(i => i.ParticipantUserId == participantUserId).Single());
+                participantList.Remove(new KeyValuePair<String, Participant>(participantId, participant));
+                ParticipantItemList.Remove(ParticipantItemList.Where(i => i.ParticipantId == participantId).Single());
                 if (participant.IsLocal())
                 {
                     localParticipantInfo = null;
@@ -955,8 +996,7 @@ namespace VidyoConferenceModeration.ViewModel
 
                 for (int iCounter = 0; iCounter < participant.Count; iCounter++)
                 {
-                    String participantUserId = participant[iCounter].GetUserId();
-                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participantUserId);
+                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant[iCounter].GetId());
                     if (item != null)
                     {
                         item.ParticipantItemElemt_SetHandStatus(true);
@@ -969,22 +1009,22 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                if (!string.IsNullOrEmpty(presenterUserId))
+                if (!string.IsNullOrEmpty(presenterId))
                 {
-                    var itemIsPresenter = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == presenterUserId);
+                    var itemIsPresenter = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == presenterId);
                     if (itemIsPresenter != null)
                     {
                         itemIsPresenter.ParticipantItemElemt_SetPresenter(false);
                         itemIsPresenter.ParticipantItemElemt_SetHardMuteUnmuteMicStatus(ParticipantAllHardAudioMuteStatus);
-                        presenterUserId = String.Empty;
+                        presenterId = String.Empty;
                     }
                 }
 
                 if (participant != null)
                 {
-                    presenterUserId = participant.GetUserId();
+                    presenterId = participant.GetId();
 
-                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                     if (item != null)
                     {
                         item.ParticipantItemElemt_SetPresenter(true);
@@ -1031,7 +1071,7 @@ namespace VidyoConferenceModeration.ViewModel
                             {
                                 lock (_itemsLock)
                                 {
-                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                                     if (item != null)
                                     {
                                         item.ParticipantItemElemt_SetHardMuteUnmuteMicStatus(true);
@@ -1046,7 +1086,7 @@ namespace VidyoConferenceModeration.ViewModel
                             {
                                 lock (_itemsLock)
                                 {
-                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                                     if (item != null)
                                     {
                                         item.ParticipantItemElemt_SetHardMuteUnmuteCameraStatus(true);
@@ -1077,7 +1117,7 @@ namespace VidyoConferenceModeration.ViewModel
                             {
                                 lock (_itemsLock)
                                 {
-                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                                     if (item != null)
                                     {
                                         item.ParticipantItemElemt_SetHardMuteUnmuteMicStatus(false);
@@ -1092,7 +1132,7 @@ namespace VidyoConferenceModeration.ViewModel
                             {
                                 lock (_itemsLock)
                                 {
-                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                                     if (item != null)
                                     {
                                         item.ParticipantItemElemt_SetHardMuteUnmuteCameraStatus(false);
@@ -1107,7 +1147,7 @@ namespace VidyoConferenceModeration.ViewModel
                             {
                                 lock (_itemsLock)
                                 {
-                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                                    var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                                     if (item != null)
                                     {
                                         item.ParticipantItemElemt_SetHandStatus(false);
@@ -1154,16 +1194,16 @@ namespace VidyoConferenceModeration.ViewModel
                         {
                             lock (_itemsLock)
                             {
-                                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                                 if (item != null)
                                 {
                                     if (item.ParticipantIsPresenter)
                                     {
                                         item.ParticipantItemElemt_SetPresenter(false);
 
-                                        if(!string.IsNullOrEmpty(presenterUserId))
+                                        if(!string.IsNullOrEmpty(presenterId))
                                         {
-                                            var presenterItem = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == presenterUserId);
+                                            var presenterItem = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == presenterId);
                                             presenterItem.ParticipantItemElemt_SetPresenter(true);
                                         }
                                     }
@@ -1178,7 +1218,7 @@ namespace VidyoConferenceModeration.ViewModel
                         {
                             lock (_itemsLock)
                             {
-                                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                                 if (item != null)
                                 {
                                     if (item.ParticipantIsPresenter)
@@ -1218,7 +1258,7 @@ namespace VidyoConferenceModeration.ViewModel
                     {
                         lock (_itemsLock)
                         {
-                            var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                            var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                             if (item != null)
                             {
                                 item.ParticipantItemElemt_SetHandStatus(false);
@@ -1374,6 +1414,22 @@ namespace VidyoConferenceModeration.ViewModel
                 IsPresenterMode = false;
                 UpdateHardMuteUnmuteMicStatusForAllParticipants(false);
                 ParticipantAllHardAudioMuteStatus = false;
+            }
+        }
+
+        public void BotJoinedCallbackProcess(Connector.ConnectorBotInfo info)
+        {
+            lock (_itemsLock)
+            {
+                BotItemList.Add(new BotItemElemt(info.name, info.id, info.data));
+            }
+        }
+
+        public void BotLeftCallbackProcess(Connector.ConnectorBotInfo info)
+        {           
+            lock (_itemsLock)
+            {
+                BotItemList.Remove(BotItemList.Where(i => i.BotId == info.id).Single());
             }
         }
 
@@ -1583,7 +1639,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                 if (item != null)
                 {
                     item.ParticipantItemElemt_SetCameraStatus(false);
@@ -1596,7 +1652,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                 if (item != null)
                 {
                     item.ParticipantItemElemt_SetCameraStatus(true);
@@ -1612,7 +1668,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                 if (item != null)
                 {
                     if (state == Device.DeviceState.DevicestatePaused)
@@ -1659,7 +1715,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                 if (item != null)
                 {
                     item.ParticipantItemElemt_SetMicStatus(false);
@@ -1671,7 +1727,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                 if (item != null)
                 {
                     item.ParticipantItemElemt_SetMicStatus(true);
@@ -1683,7 +1739,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == participant.GetUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == participant.GetId());
                 if (item != null)
                 {
                     if (state == Device.DeviceState.DevicestatePaused)
@@ -1698,11 +1754,11 @@ namespace VidyoConferenceModeration.ViewModel
             }
         }
 
-        public void LocalMicrophoneStateUpdatedCallBackProcess(LocalMicrophone localMicrophone, Device.DeviceState state)
+        public void LocalMicrophoneStateUpdatedCallBackProcess(LocalMicrophoneModel localMicrophone, Device.DeviceState state)
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == GetLocalParticipantUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == GetLocalparticipantId());
                 if ((state == Device.DeviceState.DevicestateStopped) || (state == Device.DeviceState.DevicestatePaused))
                 {
                     if (item != null)
@@ -1726,7 +1782,7 @@ namespace VidyoConferenceModeration.ViewModel
         {
             lock (_itemsLock)
             {
-                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == GetLocalParticipantUserId());
+                var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == GetLocalparticipantId());
 
                 if (state == Device.DeviceState.DevicestateStopped)
                 {
@@ -1749,7 +1805,7 @@ namespace VidyoConferenceModeration.ViewModel
 
         public void ModerationCommandReceivedCallBackProcess(Device.DeviceType deviceType, Room.RoomModerationType moderationType, bool state)
         {
-            var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == GetLocalParticipantUserId());
+            var item = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == GetLocalparticipantId());
 
             if ((deviceType == Device.DeviceType.DevicetypeLocalMicrophone) &&
             (moderationType == Room.RoomModerationType.RoommoderationtypeHardMute))
@@ -2133,6 +2189,7 @@ namespace VidyoConferenceModeration.ViewModel
 
         public ObservableCollection<RecordingItemElemt> RecordingProfileItemList { get; set; }
         public ObservableCollection<ParticipantItemElemt> ParticipantItemList { get; set; }
+        public ObservableCollection<BotItemElemt> BotItemList { get; set; }
 
         private bool _isRecordingStarted;
         public bool IsRecordingStarted
@@ -2582,9 +2639,9 @@ namespace VidyoConferenceModeration.ViewModel
                     {
                         itemPresenter.ParticipantItemElemt_SetPresenter(false);
 
-                        if (!string.IsNullOrEmpty(presenterUserId))
+                        if (!string.IsNullOrEmpty(presenterId))
                         {
-                            var presenterItem = ParticipantItemList.FirstOrDefault(i => i.ParticipantUserId == presenterUserId);
+                            var presenterItem = ParticipantItemList.FirstOrDefault(i => i.ParticipantId == presenterId);
                             presenterItem.ParticipantItemElemt_SetPresenter(true);
                         }
                     }
@@ -2599,7 +2656,7 @@ namespace VidyoConferenceModeration.ViewModel
                 Participant participant;
                 lock (_itemsLock)
                 {
-                    participant = participantList.First(kvp => kvp.Key == item.ParticipantUserId).Value;
+                    participant = participantList.First(kvp => kvp.Key == item.ParticipantId).Value;
                 }
 
                 if (!GetConnectorInstance.SetPresenter(participant, "SetPresenter"))
@@ -2619,6 +2676,17 @@ namespace VidyoConferenceModeration.ViewModel
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                         ConferenceModeChangedCallBackProcess(mode)));
+        }
+
+        public void OnBotJoined(Connector.ConnectorBotInfo info)
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+                        BotJoinedCallbackProcess(info)));
+        }
+        public void OnBotLeft(Connector.ConnectorBotInfo info)
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+                    BotLeftCallbackProcess(info)));
         }
 
         public void OnLockRoomResult(ConnectorModerationResult result)
@@ -2787,7 +2855,7 @@ namespace VidyoConferenceModeration.ViewModel
                 LocalCameraStateUpdatedCallBackProcess(localCamera, state)));
         }
 
-        public void OnLocalMicrophoneStateUpdated(LocalMicrophone localMicrophone, Device.DeviceState state)
+        public void OnLocalMicrophoneStateUpdated(LocalMicrophoneModel localMicrophone, Device.DeviceState state)
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                 LocalMicrophoneStateUpdatedCallBackProcess(localMicrophone, state)));

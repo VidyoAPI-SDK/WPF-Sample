@@ -27,6 +27,7 @@ namespace VidyoConnector.Listeners
         {
             LogCallback(MethodBase.GetCurrentMethod().Name);
             ViewModel.ConnectionState = ConnectionState.NotConnected;
+            ViewModel.Error = string.Format("Disconnected {0}Reason: {1}", Environment.NewLine, reason);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace VidyoConnector.Listeners
     {
         public ConnectionPropertiesListener(VidyoConnectorViewModel viewModel) : base(viewModel) { }
 
-        public void OnConnectionPropertiesChanged(Connector.ConnectorConnectionProperties connectionProperties)
+        public void OnConnectionPropertiesChanged(ConnectorConnectionProperties connectionProperties)
         {
             ViewModel.OnConnectionPropertiesChanged(connectionProperties);
         }

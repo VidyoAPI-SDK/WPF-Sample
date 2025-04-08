@@ -76,8 +76,10 @@
                             </Style>
                         </MenuItem.Style>
                     </MenuItem>
-                    <MenuItem Header="Debug Mode" IsCheckable="True" IsChecked="{Binding EnableDebug, Mode=TwoWay}" />
-                    <MenuItem Header="PTZ" IsCheckable="True" IsChecked="{Binding EnablePtz, Mode=TwoWay}" />
+                    <MenuItem Header="Debug Mode" IsCheckable="True" IsChecked="{Binding EnableDebug, Mode=TwoWay}"/>
+                    <MenuItem Header="Show Stats" IsCheckable="True" IsChecked="{Binding ShowStats, Mode=TwoWay}" IsEnabled="{Binding IsShowStatsEnabled, Mode=OneWay}"/>
+                    <MenuItem Header="Enable PTZ" IsCheckable="True" IsChecked="{Binding EnablePtz, Mode=TwoWay}" />
+                    <MenuItem Header="Local Camera Control" Click="MenuItem_LocalCameraControl" ToolTip="Local Camera Control" IsEnabled="{Binding EnablePtz, Mode=OneWay}" />
                     <MenuItem Header="Moderation/FECC" Click="MenuItem_ConferenceModerationClick" ToolTip="Open Conference Moderation Page"/>
                     <MenuItem Header="Options" Click="MenuItem_ConferenceOptionClick" ToolTip="Open conference option page"/>
                     <MenuItem Header="Renderer Options" Click="MenuItem_ConferenceRendererOptionClick" ToolTip="Open conference renderer option page"/>

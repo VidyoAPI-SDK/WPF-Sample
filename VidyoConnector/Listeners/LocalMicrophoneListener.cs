@@ -25,7 +25,7 @@ namespace VidyoConnector.Listeners
 
         public void OnLocalMicrophoneStateUpdated(LocalMicrophone localMicrophone, Device.DeviceState state)
         {
-            ViewModel.OnLocalMicrophoneStateUpdated(localMicrophone, state);
+            ViewModel.OnLocalMicrophoneStateUpdated(new LocalMicrophoneModel(localMicrophone), state);
         }
     }
 }

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -32,6 +34,8 @@ namespace VidyoConnector.ViewModel
         ConnectorConferenceMode _conferenceMode;
         private DispatcherTimer _lobbyModeTimer;
         private int _lobbyModeTickCounter;
+        private bool exiting = false;
+        public LocalCameraModel _localCameraSelected;
 
         // Used log4net here. Can be replaced with any other Logger.
         internal readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -52,6 +56,7 @@ namespace VidyoConnector.ViewModel
         ParticipantListener participantListener;
         ModerationCommandListener moderationCommandListener;
         MessageListener messageListener;
+		BotEventListener botEventListener;
 
         public VidyoConnectorViewModel()
         {
@@ -64,6 +69,7 @@ namespace VidyoConnector.ViewModel
             Portal = @"vidyocloud.com";
             _lobbyModeTimer = new DispatcherTimer();
             _lobbyModeTickCounter = 0;
+            _localCameraSelected = null;
         }
 
         /// <summary>
@@ -98,15 +104,34 @@ namespace VidyoConnector.ViewModel
             IsBtnCameraEnabled = true;
             IsBtnMicrophoneEnabled = true;
             IsSetProductInfoEnabled = true;
+            IsShowStatsEnabled = false;
 
             conferenceShareViewModel = new VidyoConnectorShareViewModel();
 
             ParseCommandLineArgs();
             VidyoConnectorInit();
         }
-        public void Deinit()
+
+        public bool OnMainWindowClosing(Action closeWindow)
         {
-            VidyoConnectorUninit();
+            if (exiting) return false;
+            exiting = true;
+
+            if (_connector == null) {
+                exiting = false;
+                return true;
+            }
+
+            if (ConnectionState == ConnectionState.Connected) {
+                LeaveCall();
+            }
+            Task.Run(async () => {
+                while (ConnectionState != ConnectionState.NotConnected) await Task.Delay(200);
+                VidyoConnectorUninit();
+                exiting = false;
+                closeWindow();
+            });
+            return false;
         }
 
         public void SetConferenceModerationViewModel(VidyoConferenceModerationViewModel viewmodel)
@@ -219,6 +244,7 @@ namespace VidyoConnector.ViewModel
         {
             if (LocalCameras.FirstOrDefault(x => x.Id == camera.Id) == null)
             {
+                _localCameraSelected = camera;
                 System.Windows.Application.Current.Dispatcher.Invoke(() => LocalCameras.Add(camera));
                 Log.Info(string.Format("Added local microphone: name={0} id={1}", camera.DisplayName, camera.Id));
             }
@@ -229,6 +255,11 @@ namespace VidyoConnector.ViewModel
             var cameraToRemove = LocalCameras.FirstOrDefault(x => x.Id == camera.Id);
             if (cameraToRemove != null)
             {
+                if(_localCameraSelected == cameraToRemove)
+                {
+                    _localCameraSelected = null;
+                }
+
                 System.Windows.Application.Current.Dispatcher.InvokeAsync(() => { LocalCameras.Remove(cameraToRemove); });
                 Log.Info(string.Format("Removed local camera: name={0} id={1}", cameraToRemove.DisplayName,
                     cameraToRemove.Id));
@@ -297,6 +328,7 @@ namespace VidyoConnector.ViewModel
                 Log.Info(string.Format("Set selected local camera: name={0} id={1}", camToSelect.DisplayName,
                     camToSelect.Id));
             }
+            _localCameraSelected = camToSelect;
         }
 
         private void ShareVideoContent()
@@ -338,10 +370,6 @@ namespace VidyoConnector.ViewModel
         {
             if (confViewModel != null)
                 confViewModel.OnLocalCameraStateUpdated(localCamera, state);
-
-            if (LocalCameras.FirstOrDefault(x => (x.IsStreamingVideo && x.Id != null))?.Object != null)
-                IsCameraOn = (state == Device.DeviceState.DevicestateStarted) ? true :
-                    (state == Device.DeviceState.DevicestateStopped) ? false : IsCameraOn;
         }
 
         #endregion
@@ -486,14 +514,17 @@ namespace VidyoConnector.ViewModel
             }
         }
 
-        public void OnLocalMicrophoneStateUpdated(LocalMicrophone localMicrophone, Device.DeviceState state)
+        public void OnLocalMicrophoneStateUpdated(LocalMicrophoneModel localMicrophone, Device.DeviceState state)
         {
+            var micToSelect = LocalMicrophones.FirstOrDefault(x => x.Id == localMicrophone.Id);
+
+            if (micToSelect == null || micToSelect.IsSharingContent)
+            {
+                return;
+            }
+
             if (confViewModel != null)
                 confViewModel.OnLocalMicrophoneStateUpdated(localMicrophone, state);
-
-            if (LocalMicrophones.FirstOrDefault(x => (x.IsStreamingAudio && x.Id != null))?.Object != null)
-                IsMicrophoneOn = (state == Device.DeviceState.DevicestateStarted || state == Device.DeviceState.DevicestateResumed) ?
-                    true : (state == Device.DeviceState.DevicestateStopped || state == Device.DeviceState.DevicestatePaused) ? false : IsMicrophoneOn;
         }
 
         #endregion
@@ -781,20 +812,20 @@ namespace VidyoConnector.ViewModel
                 return;
             }
 
-            if (deviceType == Device.DeviceType.DevicetypeLocalMicrophone)
-            {
-                if (moderationType == Room.RoomModerationType.RoommoderationtypeHardMute)
-                {
-                    IsBtnMicrophoneEnabled = confViewModel.IsAllowForModerationOperation() || !state;
-                }
-            }
+            bool enabled = !(moderationType == Room.RoomModerationType.RoommoderationtypeHardMute && state && !confViewModel.IsAllowForModerationOperation());
+            bool privacy = moderationType != Room.RoomModerationType.RoommoderationtypeNone && state;
 
-            if (deviceType == Device.DeviceType.DevicetypeLocalCamera)
-            {
-                if (moderationType == Room.RoomModerationType.RoommoderationtypeHardMute)
-                {
-                    IsBtnCameraEnabled = confViewModel.IsAllowForModerationOperation() || !state;
-                }
+            switch (deviceType) {
+                case Device.DeviceType.DevicetypeLocalCamera:
+                    if (privacy) IsCameraOn = false;
+                    IsBtnCameraEnabled = enabled;
+                    break;
+                case Device.DeviceType.DevicetypeLocalMicrophone:
+                    IsBtnMicrophoneEnabled = enabled;
+                    if (privacy) IsMicrophoneOn = false;
+                    break;
+                default:
+                    break;
             }
 
             confViewModel.OnModerationCommandReceived(deviceType, moderationType, state);
@@ -831,6 +862,21 @@ namespace VidyoConnector.ViewModel
             _conferenceMode = mode;
         }
 
+        public void OnBotJoined(ConnectorBotInfo info)
+        {
+            if (confViewModel != null)
+            {
+                confViewModel.OnBotJoined(info);
+            }
+        }
+        public void OnBotLeft(ConnectorBotInfo info)
+        {
+            if (confViewModel != null)
+            {
+                confViewModel.OnBotLeft(info);
+            }
+        }
+		
         public void OnConnectionPropertiesChanged(ConnectorConnectionProperties connectionProperties)
         {
             LobbyModeRoomName = connectionProperties.roomName;
@@ -962,10 +1008,12 @@ namespace VidyoConnector.ViewModel
                         IsBtnCameraEnabled = true;
                         IsBtnMicrophoneEnabled = true;
                         IsSetProductInfoEnabled = true;
+                        IsShowStatsEnabled = false;
                         break;
                     case ConnectionState.Connected:
                         Status = "Connected";
                         IsSetProductInfoEnabled = false;
+                        IsShowStatsEnabled = true;
                         break;
                     case ConnectionState.OperationInProgress:
                         Status = "Please wait...";
@@ -985,6 +1033,20 @@ namespace VidyoConnector.ViewModel
                 OnPropertyChanged();
 
                 CommandToggleDebug.Execute(null);
+            }
+        }
+
+        private bool _showStats;
+        public bool ShowStats
+        {
+            get { return _showStats; }
+            set
+            {
+                _showStats = value;
+                Log.InfoFormat("Show stats={0}", value);
+                OnPropertyChanged();
+
+                CommandToggleStats.Execute(null);
             }
         }
 
@@ -1116,6 +1178,17 @@ namespace VidyoConnector.ViewModel
             }
         }
 
+        private bool _isShowStatsEnabled;
+        public bool IsShowStatsEnabled
+        {
+            get { return _isShowStatsEnabled; }
+            set
+            {
+                _isShowStatsEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
         private void JoinLeaveCall()
         {
             Log.Info(string.Format("Toggling join / leave call. Current state conference state={0}", ConnectionState));
@@ -1168,40 +1241,25 @@ namespace VidyoConnector.ViewModel
             Log.Info("Attempted to disconnect.");
         }
 
-        private void CleanUp()
-        {
-            if (_connector != null)
-            {
-                Log.Info("Exiting the app... ");
-                if (ConnectionState == ConnectionState.Connected)
-                {
-                    LeaveCall();
-                }
-
-                confViewModel.DeInitialize();
-                confViewModel = null;
-               
-                conferenceShareViewModel?.Uninit();
-                VidyoConnectorUninit();
-                System.Windows.Application.Current.Shutdown();
-            }
-        }
-
         private void QuitApplication()
         {
             var dlgRes = MessageBox.Show("Are you sure you want to close VidyoConnector?", "Exit",
             MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (dlgRes == MessageBoxResult.No)
-            {
-                return;
-            }
-            CleanUp();
+            if (dlgRes == MessageBoxResult.No) return;
+
+            if (!OnMainWindowClosing(() => {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                    System.Windows.Threading.DispatcherPriority.Normal, 
+                    new Action(() => System.Windows.Application.Current.Shutdown()));
+            })) return;
+
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void ShowAbout()
         {
             MessageBox.Show(
-                "VidyoClient-WinSDK Version " + GetApplicationVersion() + "\r\n\r\nCopyright © 2017-2022 Vidyo, Inc. All rights reserved.",
+                "VidyoClient-WinSDK Version " + GetApplicationVersion() + "\r\n\r\nCopyright © 2017-2025 Vidyo, Inc. All rights reserved.",
                 "About VidyoConnector", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -1212,7 +1270,7 @@ namespace VidyoConnector.ViewModel
             }
             if (EnableDebug)
             {
-                _connector.EnableDebug(7776, "info@VidyoClient info@VidyoConnector warning");
+                _connector.EnableDebug(7776, String.Empty);
                 Log.Info("Debug mode disabled.");
             }
             else
@@ -1221,7 +1279,17 @@ namespace VidyoConnector.ViewModel
                 Log.Info("Debug mode enabled");
             }
         }
-  
+
+        private void ToggleStats()
+        {
+            if (_connector == null)
+            {
+                return;
+            }
+
+            _connector.ShowStatisticsDialog(ShowStats);
+            Log.InfoFormat("ToggleStats, ShowStats={0}", ShowStats);
+        }
         private void TogglePtz()
         {
             if (_connector != null)
@@ -1283,11 +1351,6 @@ namespace VidyoConnector.ViewModel
             {
                 Log.ErrorFormat("Error while parsing command line arguments: {0}", ex.Message);
             }
-        }
-
-        public void CloseApplication()
-        {
-            CleanUp();
         }
 
         #endregion
@@ -1377,6 +1440,9 @@ namespace VidyoConnector.ViewModel
         private ICommand _commandToggleDebug;
         public ICommand CommandToggleDebug { get { return GetCommand(ref _commandToggleDebug, x => ToggleDebug()); } }
 
+        private ICommand _commandToggleStats;
+        public ICommand CommandToggleStats { get { return GetCommand(ref _commandToggleStats, x => ToggleStats()); } }
+
         private ICommand _commandTogglePtz;
         public ICommand CommandTogglePtz { get { return GetCommand(ref _commandTogglePtz, x => TogglePtz()); } }
 
@@ -1437,6 +1503,10 @@ namespace VidyoConnector.ViewModel
         {
             return _connector.GetVersion();
         }
+        public LocalCameraModel GetSelectedLocalCamera()
+        {
+            return _localCameraSelected;
+        }
 
         private UserLoginType _userLoginType;
         public void SetLoginType(UserLoginType userOption)
@@ -1488,6 +1558,7 @@ namespace VidyoConnector.ViewModel
             participantListener = new ParticipantListener(this);
             moderationCommandListener = new ModerationCommandListener(this);
             messageListener = new MessageListener(this);
+            botEventListener = new BotEventListener(this);
 
             try {
                 if (!_connector.RegisterLocalCameraEventListener(localCameraListener)) throw new Exception("LocalCameraEventListener");
@@ -1500,6 +1571,7 @@ namespace VidyoConnector.ViewModel
                 if (!_connector.RegisterParticipantEventListener(participantListener)) throw new Exception("ParticipantEventListener");
                 if (!_connector.RegisterModerationCommandEventListener(moderationCommandListener)) throw new Exception("ModerationCommandEventListener");
                 if (!_connector.RegisterMessageEventListener(messageListener)) throw new Exception("MessageEventListener");
+                if (!_connector.RegisterBotEventListener(botEventListener)) throw new Exception("botEventListener");
 
                 Log.Info("Registered VidyoConnector callbacks.");
                 return true;
@@ -1537,6 +1609,7 @@ namespace VidyoConnector.ViewModel
                 participantListener = null;
                 moderationCommandListener = null;
                 messageListener = null;
+                botEventListener = null;
 
                 Log.Info("Unregistered VidyoConnector callbacks.");
                 return true;
@@ -1555,19 +1628,30 @@ namespace VidyoConnector.ViewModel
                 Log.Info("Connector already constructed");
                 return true;
             }
+
             if (!ConnectorPKG.Initialize()) {
                 MessageBox.Show("Failed to initialize connector pkg. Init failed.", "Vidyo Connector");
                 return false;
             }
             Log.Info("VidyoConnector initialized.");
 
-            string googleId = System.Configuration.ConfigurationManager.AppSettings["GoogleAnalyticId"];
-            if (!string.IsNullOrEmpty(googleId) && !ConnectorPKG.SetExperimentalOptions(("{\"googleAnalyticsDefaultId\":\"" + googleId + "\"}")))
+            string id = System.Configuration.ConfigurationManager.AppSettings["id"];
+            string key = System.Configuration.ConfigurationManager.AppSettings["key"];
+            string options = "{\"";
+            options += "GoogleAnalyticsData" + "\":{";
+            options += "\"id" + "\":\"";
+            options += id;
+            options += "\",\"";
+            options += "key" + "\":\"";
+            options += key;
+            options += "\"}}";
+
+            if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(key) && !ConnectorPKG.SetExperimentalOptions((options)))
             {
                 MessageBox.Show("Failed to set the default QA google analytic service before connector is constructed", "Vidyo Connector");
             }
 
-            _connector = new Connector(_handle, Connector.ConnectorViewStyle.ConnectorviewstyleDefault, 8, String.Empty, String.Empty, 0);
+            _connector = new Connector(_handle, Connector.ConnectorViewStyle.ConnectorviewstyleDefault, 8, String.Empty, AppDomain.CurrentDomain.BaseDirectory + "VidyoClient.log", 0);
             if (_connector == null) {
                 MessageBox.Show("Failed to construct connector. Init failed.", "Vidyo Connector");
                 return false;
@@ -1606,7 +1690,10 @@ namespace VidyoConnector.ViewModel
             _connector.Disable();
             _connector.Dispose();
             _connector = null;
-            ConnectorPKG.Uninitialize();
+            Task.Run(async () =>
+            {
+                ConnectorPKG.Uninitialize();
+            });
             return true;
         }
     }

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VidyoConnector</RootNamespace>
     <AssemblyName>VidyoConnector</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -28,6 +28,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <langVersion>7.1</langVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -38,6 +39,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <langVersion>7.1</langVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -48,6 +50,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <langVersion>7.1</langVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\Win32\Release\</OutputPath>
@@ -58,6 +61,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <langVersion>7.1</langVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -379,6 +383,30 @@
     <Compile Include="..\include\csharp\EndpointShareOptions.cs">
       <Link>VidyoClient Generated Source Files\EndpointShareOptions.cs</Link>
     </Compile>
+    <Compile Include="..\include\csharp\ConnectorConnectionProperties.cs">
+      <Link>VidyoClient Generated Source Files\ConnectorConnectionProperties.cs</Link>
+    </Compile>
+    <Compile Include="..\include\csharp\ConnectorGoogleAnalyticsEventTable.cs">
+      <Link>VidyoClient Generated Source Files\ConnectorGoogleAnalyticsEventTable.cs</Link>
+    </Compile>
+    <Compile Include="..\include\csharp\ConnectorGoogleAnalyticsOptions.cs">
+      <Link>VidyoClient Generated Source Files\ConnectorGoogleAnalyticsOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\include\csharp\ConnectorInCallEvent.cs">
+      <Link>VidyoClient Generated Source Files\ConnectorInCallEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\include\csharp\ConnectorProductInformation.cs">
+      <Link>VidyoClient Generated Source Files\ConnectorProductInformation.cs</Link>
+    </Compile>
+    <Compile Include="..\include\csharp\ConnectorTokenInfo.cs">
+      <Link>VidyoClient Generated Source Files\ConnectorTokenInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\include\csharp\VirtualRenderer.cs">
+      <Link>VidyoClient Generated Source Files\VirtualRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\include\csharp\CameraControlCommand.cs">
+      <Link>VidyoClient Generated Source Files\CameraControlCommand.cs</Link>
+    </Compile>
     <Compile Include="BnbLicenseToken.cs" />
     <Compile Include="Commands\BindableCommand.cs" />
     <Compile Include="Converters\BooleanToVisibilityInvertedConverter.cs" />
@@ -387,6 +415,7 @@
     <Compile Include="GeneralDialog.xaml.cs">
       <DependentUpon>GeneralDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Listeners\BotEventListener.cs" />
     <Compile Include="Listeners\ConferenceModeListener.cs" />
     <Compile Include="Listeners\ConnectionListener.cs" />
     <Compile Include="Listeners\ConnectionPropertiesListener.cs" />
@@ -419,6 +448,9 @@
     <Compile Include="Model\DeviceModelBase.cs" />
     <Compile Include="Model\RemoteCameraModel.cs" />
     <Compile Include="Model\VirtualAudioSourceModel.cs" />
+    <Compile Include="VidyoCameraControl.xaml.cs">
+      <DependentUpon>VidyoCameraControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ModeratorPinDialog.xaml.cs">
       <DependentUpon>ModeratorPinDialog.xaml</DependentUpon>
     </Compile>
@@ -478,6 +510,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="VidyoCameraControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ModeratorPinDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -490,7 +526,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="VidyoAnalytics.xaml">
+    <Page Include="VidyoCameraPreset.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -498,7 +534,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="VidyoCameraPreset.xaml">
+    <Page Include="SendPrivateMsgDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -510,7 +546,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SendPrivateMsgDialog.xaml">
+    <Page Include="VidyoAnalytics.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -689,6 +725,13 @@
   <ItemGroup>
     <Resource Include="Images\speakerOff.png" />
     <Resource Include="Images\speakerOn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\privateChat.png" />

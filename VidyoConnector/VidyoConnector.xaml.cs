@@ -21,6 +21,7 @@ namespace VidyoConnector
         VidyoVirtualDevices virtualDevices;
         VidyoConferenceSharing conferenceShareWindow;
         VidyoProductInfo productInfo;
+        VidyoCameraControl cameraControl;
 
         public MainWindow()
         {
@@ -42,6 +43,7 @@ namespace VidyoConnector
             conferenceShareWindow.SetConferenceShareViewModel(((VidyoConnectorViewModel)DataContext).GetVidyoConnectorShareViewModel());
 
             productInfo = new VidyoProductInfo(((VidyoConnectorViewModel)DataContext).GetApplicationVersion());
+            cameraControl = new VidyoCameraControl();
         }
 
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
@@ -199,7 +201,10 @@ namespace VidyoConnector
 
         private void OnMainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            ((VidyoConnectorViewModel)DataContext).Deinit();
+            e.Cancel = !((VidyoConnectorViewModel)DataContext).OnMainWindowClosing(() => {
+                Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                this.Close()));
+            });
         }
 
         private void MenuItem_ConferenceOptionClick(object sender, RoutedEventArgs e)
@@ -228,6 +233,11 @@ namespace VidyoConnector
             virtualDevices.Show();
         }
 
+        private void MenuItem_LocalCameraControl(object sender, RoutedEventArgs e)
+        {
+            cameraControl.SetSelectedLocalCamera(((VidyoConnectorViewModel)DataContext).GetSelectedLocalCamera());
+            cameraControl.Show();
+        }
         private void MenuItem_SetProductInfo(object sender, RoutedEventArgs e)
         {
             productInfo.setProductInfo = ((VidyoConnectorViewModel)DataContext).SetProductInfo;

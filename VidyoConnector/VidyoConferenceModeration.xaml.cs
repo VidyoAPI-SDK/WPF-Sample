@@ -120,14 +120,11 @@ namespace VidyoConferenceModeration
                 return;
             }
             if (participantCommand != ParticipantCommandType.UnknownCommand)
-            { 
-                String participantUserId;
-
+            {
                 ParticipantItemElemt obj = ListViewParticipantList.SelectedItem as ParticipantItemElemt;
                 if (obj != null)
                 {
-                    participantUserId = obj.ParticipantUserId;
-                    ((VidyoConferenceModerationViewModel)DataContext).VidyoConferenceModerationViewModel_ParticipantCommand(participantUserId, participantCommand);
+                    ((VidyoConferenceModerationViewModel)DataContext).VidyoConferenceModerationViewModel_ParticipantCommand(obj.ParticipantId, participantCommand);
                 }
             }
             ListViewParticipantList.SelectedIndex = -1;

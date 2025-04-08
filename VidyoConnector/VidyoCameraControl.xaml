@@ -1,0 +1,187 @@
+﻿<Window x:Class="VidyoConnector.VidyoCameraControl"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VidyoConnector"
+        mc:Ignorable="d"
+        Title="Vidyo Camera Control" Height="380" Width="440" ResizeMode="NoResize">
+    <Grid Margin="0,0,-20,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="90*"/>
+            <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid x:Name="VidyoCameraControlInfo" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50*"/>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="40*"/>
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="VidyoCameraControlInformation" Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+
+                <Grid x:Name="CameraName" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="65*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label x:Name="LabelCameraName" Content="Camera Name:" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Foreground="#FF666666" FontWeight="Bold" FontSize="12"/>
+                    <TextBox x:Name="TextBoxCameraName" Grid.Row="1" Grid.Column="2" BorderBrush="#FF666666" IsEnabled="False"/>
+                </Grid>
+
+                <Grid x:Name="CameraCapability" Grid.Row="3">
+                    <Label x:Name="LabelCameraCapability" Content="Camera Capabilities:" Grid.Row="1"  HorizontalAlignment="Left" Foreground="#FF666666" FontWeight="Bold" FontSize="12"/>
+                </Grid>
+
+                <Grid x:Name="CameraCapabilityControl" Grid.Row="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid x:Name="CameraCapabilityPanTilt" Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="10*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="10*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="10*"/>
+                        </Grid.RowDefinitions>
+
+                        <CheckBox x:Name="CheckBoxpanTiltHasRubberBand" Content="PanTilt RubberBand" IsChecked="{Binding panTiltHasRubberBand}" Grid.Row="0" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                        <CheckBox x:Name="CheckBoxpanTiltHasContinuousMove" Content="PanTilt Continuous" IsChecked="{Binding panTiltHasContinuousMove}"  Grid.Row="2" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                        <CheckBox x:Name="CheckBoxpanTiltHasNudge" Content="PanTilt Nudge" IsChecked="{Binding panTiltHasNudge}"  Grid.Row="4" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                    </Grid>
+
+                    <Grid x:Name="CameraCapabilityZoom" Grid.Column="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="10*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="10*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="10*"/>
+                        </Grid.RowDefinitions>
+
+                        <CheckBox x:Name="CheckBoxzoomHasRubberBand" Content="Zoom RubberBand" IsChecked="{Binding zoomHasRubberBand}" Grid.Row="0" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                        <CheckBox x:Name="CheckBoxzooomHasContinuousMove" Content="Zoom Continuous" IsChecked="{Binding zooomHasContinuousMove}"  Grid.Row="2" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                        <CheckBox x:Name="CheckBoxzoomHasNudge" Content="Zoom Nudge" IsChecked="{Binding zoomHasNudge}"  Grid.Row="4" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                    </Grid>
+
+                    <Grid x:Name="CameraCapabilityOthers" Grid.Column="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="10*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="10*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="10*"/>
+                        </Grid.RowDefinitions>
+
+                        <CheckBox x:Name="CheckBoxhasPhotoCapture" Content="Photo Capture" IsChecked="{Binding hasPhotoCapture}"  Grid.Row="0" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                        <CheckBox x:Name="CheckBoxhasViscaSupport" Content="Visca Support" IsChecked="{Binding hasViscaSupport}"  Grid.Row="2" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                        <CheckBox x:Name="CheckBoxhasPresetSupport" Content="Preset Support" IsChecked="{Binding hasPresetSupport}"  Grid.Row="4" Foreground="#FF666666" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="False"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <Grid x:Name="VidyoCameraControl_" Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="5*"/>
+                    <RowDefinition Height="20*"/>
+                </Grid.RowDefinitions>
+
+                <Grid x:Name="VidyoCameraControlSelect" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <RadioButton x:Name="RadioButtonNudge" GroupName="GroupControlMode" Content="Nudge Mode" Checked="RadioButtonNudgeMode_Checked" Grid.Row="0" Grid.Column="0" FontSize="12" FontWeight="Bold" Foreground="#FF666666" IsEnabled="False" />
+                    <RadioButton x:Name="RadioButtonContinuous" GroupName="GroupControlMode" Content="Continous Mode" Checked="RadioButtonContinousMode_Checked" Grid.Row="0" Grid.Column="2" FontSize="12" FontWeight="Bold" Foreground="#FF666666" IsEnabled="False"/>
+                </Grid>
+
+                <Grid x:Name="VidyoCameraControlAction" Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="20*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="20*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="20*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid x:Name="VidyoCameraControlActionPan" Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button x:Name="ButtonLeft" Content="Left" Grid.Row="1"  Margin="5,5,5,5" FontSize="12" Foreground="White" Background="#FF83C36D" Click="ButtonLeft_Click" IsEnabled="False"/>
+                        <Button x:Name="ButtonRight" Content="Right" Grid.Row="3"  Margin="5,5,5,5" FontSize="12" Foreground="White" Background="#FF83C36D" Click="ButtonRight_Click" IsEnabled="False"/>
+                    </Grid>
+
+                    <Grid x:Name="VidyoCameraControlActionTilt" Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button x:Name="ButtonUp" Content="Up" Grid.Row="1"  Margin="5,5,5,5" FontSize="12" Foreground="White" Background="#FF83C36D" Click="ButtonUp_Click" IsEnabled="False"/>
+                        <Button x:Name="ButtonDown" Content="Down" Grid.Row="3"  Margin="5,5,5,5" FontSize="12" Foreground="White" Background="#FF83C36D" Click="ButtonDown_Click" IsEnabled="False"/>
+                    </Grid>
+
+                    <Grid x:Name="VidyoCameraControlActionZoom" Grid.Column="4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button x:Name="ButtonZoomIn" Content="Zoom In" Grid.Row="1"  Margin="5,5,5,5" FontSize="12" Foreground="White" Background="#FF83C36D" Click="ButtonZoomIn_Click" IsEnabled="False"/>
+                        <Button x:Name="ButtonZoomOut" Content="Zoom Out" Grid.Row="3"  Margin="5,5,5,5" FontSize="12" Foreground="White" Background="#FF83C36D" Click="ButtonZoomOut_Click" IsEnabled="False"/>
+                    </Grid>
+
+                    <Grid x:Name="VidyoCameraControlTimeout" Grid.Column="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="5*"/>
+                        </Grid.RowDefinitions>
+
+                        <Label x:Name="LabelTimeout" Content="Timeout(ms):" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" Foreground="#FF666666" FontWeight="Bold" FontSize="12" IsEnabled="False"/>
+                        <TextBox x:Name="TextBoxTimeout" Text="330" Grid.Row="3" Grid.Column="2" BorderBrush="#FF666666" HorizontalAlignment="Center" IsEnabled="False"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

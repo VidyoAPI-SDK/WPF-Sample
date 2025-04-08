@@ -122,7 +122,7 @@ namespace VidyoAnalytics.ViewModel
         }
     }
 
-    public class VidyoAnalyticsViewModel : VidyoConnectorViewModel, INotifyPropertyChanged
+    public class VidyoAnalyticsViewModel : VidyoConnectorViewModel, INotifyPropertyChanged, IGetGoogleAnalyticsOptions
     {
         bool isGoogleServiceStarted;
         bool isInsightsServiceStarted;
@@ -134,7 +134,8 @@ namespace VidyoAnalytics.ViewModel
             isInsightsServiceStarted = false;
             IsServerUrlBoxEnabled = IsInsightsStartButtonEnabled = true;
             IsInsightsStopButtonEnabled = false;
-            IsTrackingIdBoxEnabled = false;
+            IsMeasurementIdBoxEnabled = false;
+            IsAPISecretBoxEnabled = false;
             IsGoogleAnalyticsStartButtonEnabled = true;
             IsGoogleAnalyticsStopButtonEnabled = false;
         }
@@ -143,14 +144,10 @@ namespace VidyoAnalytics.ViewModel
         {
             EventActionItemList.Clear();
             GetConnectorInstance.GetGoogleAnalyticsEventTable(new AnalyticsListener(this));
+            GetConnectorInstance.GetGoogleAnalyticsOptions(this);
 
             IsGoogleAnalyticsStartButtonEnabled = !GetConnectorInstance.IsGoogleAnalyticsServiceEnabled();
             IsGoogleAnalyticsStopButtonEnabled = !IsGoogleAnalyticsStartButtonEnabled;
-            if (!IsGoogleAnalyticsStartButtonEnabled)
-            {
-                TrackingIdText = GetConnectorInstance.GetGoogleAnalyticsServiceID();               
-            }
-
             IsInsightsStartButtonEnabled = !GetConnectorInstance.IsInsightsServiceEnabled();
             IsInsightsStopButtonEnabled = !IsInsightsStartButtonEnabled;
             if (!IsInsightsStartButtonEnabled)
@@ -253,9 +250,13 @@ namespace VidyoAnalytics.ViewModel
 
         public void StartGoogleAnalyticsService()
         {
-            if (GetConnectorInstance.StartGoogleAnalyticsService(String.IsNullOrEmpty(TrackingIdText) ? System.Configuration.ConfigurationManager.AppSettings["GoogleAnalyticId"] : TrackingIdText))
+            ConnectorGoogleAnalyticsOptions options = ConnectorGoogleAnalyticsOptionsFactory.Create();
+            options.id = MeasurementIdText;
+            options.key = APISecretText;
+
+            if (GetConnectorInstance.StartGoogleAnalyticsService(options))
             {
-                IsTrackingIdBoxEnabled = IsGoogleAnalyticsStartButtonEnabled = false;
+                IsAPISecretBoxEnabled = IsMeasurementIdBoxEnabled = IsGoogleAnalyticsStartButtonEnabled = false;
                 isGoogleServiceStarted = IsGoogleAnalyticsStopButtonEnabled = true;
             }
             else
@@ -268,7 +269,7 @@ namespace VidyoAnalytics.ViewModel
         {
             if(GetConnectorInstance.StopGoogleAnalyticsService())
             {
-                IsTrackingIdBoxEnabled = IsGoogleAnalyticsStartButtonEnabled = true;
+                IsAPISecretBoxEnabled = IsMeasurementIdBoxEnabled = IsGoogleAnalyticsStartButtonEnabled = true;
                 isGoogleServiceStarted = IsGoogleAnalyticsStopButtonEnabled = false;
             }
             else
@@ -320,12 +321,20 @@ namespace VidyoAnalytics.ViewModel
                 GetAnalyticsEventTable(eventActions)));
         }
 
-        private bool _isTrackingIdBoxEnabled;
-        public bool IsTrackingIdBoxEnabled
+        private bool _isMeasurementIdBoxEnabled;
+        public bool IsMeasurementIdBoxEnabled
         {
-            get { return _isTrackingIdBoxEnabled; }
-            set { _isTrackingIdBoxEnabled = value; OnPropertyChanged(); }
+            get { return _isMeasurementIdBoxEnabled; }
+            set { _isMeasurementIdBoxEnabled = value; OnPropertyChanged(); }
         }
+
+        private bool _isAPISecretBoxEnabled;
+        public bool IsAPISecretBoxEnabled
+        {
+            get { return _isAPISecretBoxEnabled; }
+            set { _isAPISecretBoxEnabled = value; OnPropertyChanged(); }
+        }
+
         private bool _isServerUrlBoxEnabled;
         public bool IsServerUrlBoxEnabled
         {
@@ -361,13 +370,13 @@ namespace VidyoAnalytics.ViewModel
             set { _isInsightsStopButtonEnabled = value; OnPropertyChanged(); }
         }
 
-        private string _trackingIdText;
-        public string TrackingIdText
+        private string _measurementIdText;
+        public string MeasurementIdText
         {
-            get { return _trackingIdText; }
+            get { return _measurementIdText; }
             set
             {
-                _trackingIdText = value;
+                _measurementIdText = value;
                 OnPropertyChanged();
             }
         }
@@ -383,6 +392,17 @@ namespace VidyoAnalytics.ViewModel
             }
         }
 
+        private string _apiSecretText;
+        public string APISecretText
+        {
+            get { return _apiSecretText; }
+            set
+            {
+                _apiSecretText = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ObservableCollection<EventActionItem> EventActionItemList { get; set; }
 
         private ICommand GetCommand(ref ICommand command, Action<object> action, bool isCanExecute = true)
@@ -393,6 +413,15 @@ namespace VidyoAnalytics.ViewModel
             cmd.ExecuteAction += action;
             command = cmd;
             return command;
+        }
+
+        void IGetGoogleAnalyticsOptions.OnGetGoogleAnalyticsOptions(ConnectorGoogleAnalyticsOptions options)
+        {
+            if (IsGoogleAnalyticsStartButtonEnabled)
+            {
+                this.APISecretText = options.key;
+                this.MeasurementIdText = options.id;
+            }
         }
     }
 }

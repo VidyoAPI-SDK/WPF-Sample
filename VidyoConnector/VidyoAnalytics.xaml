@@ -28,6 +28,7 @@
                 <RowDefinition Height="65*"/>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="10*"/>
+                <RowDefinition Height="10*"/>
                 <RowDefinition Height="2*"/>
                 <RowDefinition Height="10*"/>
             </Grid.RowDefinitions>
@@ -76,19 +77,31 @@
                 </Grid>
             </Grid>
 
-            <Grid x:Name="GoogleAnalyticsTrackingIdGrid" Grid.Row="4" Grid.Column="1">
+            <Grid x:Name="GoogleAnalyticsMeasurementIdGrid" Grid.Row="4" Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="30*"/>
                     <ColumnDefinition Width="0*"/>
-                    <ColumnDefinition Width="70*"/>
+                    <ColumnDefinition Width="50*"/>
                 </Grid.ColumnDefinitions>
 
-                <Label x:Name="TrackingIdLabel" Content="Tracking Id" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" FontSize="14" FontWeight="Bold" Foreground="#353535"/>
-                <Label x:Name="TrackingIdMsgLabel" Content="(Optional)" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" FontSize="9" FontWeight="Light" FontStyle="Italic" Foreground="#353535"/>
-                <TextBox x:Name="TrackingIdTextBox" Grid.Column="2" IsEnabled="{Binding IsTrackingIdBoxEnabled}" Text="{Binding TrackingIdText, UpdateSourceTrigger=PropertyChanged}" Foreground="#4A4A4A" VerticalAlignment="Center" FontSize="14" Margin="10,0,10,0"/>
+                <Label x:Name="MeasurementIdLabel" Content="Measurement Id" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" FontSize="14" FontWeight="Bold" Foreground="#353535"/>
+                <Label x:Name="MeasurementIdMsgLabel" Content="(Optional)" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" FontSize="9" FontWeight="Light" FontStyle="Italic" Foreground="#353535"/>
+                <TextBox x:Name="MeasurementIdTextBox" Grid.Column="2" IsEnabled="{Binding IsMeasurementIdBoxEnabled}" Text="{Binding MeasurementIdText, UpdateSourceTrigger=PropertyChanged}" Foreground="#4A4A4A" VerticalAlignment="Center" FontSize="14" Margin="10,0,10,0"/>
             </Grid>
 
-            <Grid x:Name="GoogleAnalyticsStartStop" Grid.Row="6" Grid.Column="1">
+            <Grid x:Name="GoogleAnalyticsAPISecretGrid" Grid.Row="5" Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30*"/>
+                    <ColumnDefinition Width="0*"/>
+                    <ColumnDefinition Width="50*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label x:Name="APISecretLabel" Content="API Secret" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" FontSize="14" FontWeight="Bold" Foreground="#353535"/>
+                <Label x:Name="APISecretMsgLabel" Content="(Optional)" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" FontSize="9" FontWeight="Light" FontStyle="Italic" Foreground="#353535"/>
+                <TextBox x:Name="APISecretTextBox" Grid.Column="2" IsEnabled="{Binding IsAPISecretBoxEnabled}" Text="{Binding APISecretText, UpdateSourceTrigger=PropertyChanged}" Foreground="#4A4A4A" VerticalAlignment="Center" FontSize="14" Margin="10,0,10,0"/>
+            </Grid>
+
+            <Grid x:Name="GoogleAnalyticsStartStop" Grid.Row="7" Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="50*"/>
                     <ColumnDefinition Width="2*"/>
