@@ -77,6 +77,7 @@
                         </MenuItem.Style>
                     </MenuItem>
                     <MenuItem Header="Debug Mode" IsCheckable="True" IsChecked="{Binding EnableDebug, Mode=TwoWay}"/>
+                    <MenuItem Header="Enable Debug Audio Recording" IsCheckable="True" IsChecked="{Binding EnableDebugAudioRecording, Mode=TwoWay}" />
                     <MenuItem Header="Show Stats" IsCheckable="True" IsChecked="{Binding ShowStats, Mode=TwoWay}" IsEnabled="{Binding IsShowStatsEnabled, Mode=OneWay}"/>
                     <MenuItem Header="Enable PTZ" IsCheckable="True" IsChecked="{Binding EnablePtz, Mode=TwoWay}" />
                     <MenuItem Header="Local Camera Control" Click="MenuItem_LocalCameraControl" ToolTip="Local Camera Control" IsEnabled="{Binding EnablePtz, Mode=OneWay}" />
@@ -86,6 +87,7 @@
                     <MenuItem Header="Backgroud Select" Click="MenuItem_BackgroundSelect" ToolTip="Open background select page"/>
                     <MenuItem Header="VirtualDevices" Click="MenuItem_VirtualDevices" ToolTip="Open virtual devices page"/>
                     <MenuItem Header="Set Product Info" Click="MenuItem_SetProductInfo" ToolTip="Set Product Info" IsEnabled="{Binding IsSetProductInfoEnabled, Mode=OneWay}"/>
+                    <MenuItem Header="Microphone Options" Click="MenuItem_MicrophoneOptions" ToolTip="Open microphone option page"/>
                 </MenuItem>
                 <MenuItem Header="Devices">
                     <MenuItem Name="MenuItemCameras" Header="Cameras" ItemsSource="{Binding LocalCameras}" >

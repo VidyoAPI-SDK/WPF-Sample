@@ -15,6 +15,21 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Images\small.ico</ApplicationIcon>
@@ -67,14 +82,15 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=2.0.17.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.17\lib\net45\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -491,6 +507,9 @@
     <Compile Include="VidyoProductInfo.xaml.cs">
       <DependentUpon>VidyoProductInfo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VidyoMicrophoneOptions.xaml.cs">
+      <DependentUpon>VidyoMicrophoneOptions.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VidyoVirtualDevices.xaml.cs">
       <DependentUpon>VidyoVirtualDevices.xaml</DependentUpon>
     </Compile>
@@ -501,6 +520,7 @@
     <Compile Include="ViewModel\VidyoConferenceModerationViewModel.cs" />
     <Compile Include="ViewModel\VidyoConferenceSharingViewModel.cs" />
     <Compile Include="ViewModel\VidyoConnectorViewModel.cs" />
+    <Compile Include="ViewModel\VidyoMicrophoneViewModel.cs" />
     <Compile Include="ViewModel\VidyoOptionsViewModel.cs" />
     <Compile Include="ViewModel\VidyoVirtualDevicesViewModel.cs" />
     <Compile Include="VirtualBackgroundPreview.xaml.cs">
@@ -577,6 +597,10 @@
     <Page Include="VidyoProductInfo.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="VidyoMicrophoneOptions.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VidyoVirtualDevices.xaml">
       <SubType>Designer</SubType>

@@ -99,6 +99,7 @@ namespace VidyoConnector.ViewModel
             IsMicrophoneOn = true;
             IsSpeakerOn = true;
             EnableDebug = false;
+            EnableDebugAudioRecording = false;
             EnablePtz = false;
             EnableHighFramerateShare = false;
             IsBtnCameraEnabled = true;
@@ -413,7 +414,45 @@ namespace VidyoConnector.ViewModel
                 Log.Info(string.Format("Removed local microphone: name={0} id={1}", micToRemove.DisplayName,
                     micToRemove.Id));
             }
+            if (mic.IsDebugAudioRecording)
+            {
+                mic.IsDebugAudioRecording = false;
+                mic.Object.DisableDebugRecording();
+            }
         }
+
+        public void SetDebugAudioRecording(bool enable)
+        {
+            var micToSelect = LocalMicrophones.FirstOrDefault(x => x.IsStreamingAudio);
+            if (enable != micToSelect.IsDebugAudioRecording)
+            {
+                LocalMicrophones.Select(x =>
+                {
+                    x.IsDebugAudioRecording = false;
+                    return x;
+                }).ToList();
+                if (enable)
+                {
+                    string downloadsPath = System.IO.Path.Combine(
+                        System.IO.Directory.GetCurrentDirectory(), "VidyoConnector_Debug_Audio\\");
+
+                    // Create the directory if it doesn't exist
+                    if (!System.IO.Directory.Exists(downloadsPath))
+                    {
+                        System.IO.Directory.CreateDirectory(downloadsPath);
+                    }
+
+                    micToSelect.IsDebugAudioRecording = true;
+                    micToSelect.Object.EnableDebugRecording(downloadsPath);
+                }
+                else
+                {
+                    micToSelect.Object.DisableDebugRecording();
+                }
+                Log.Info(string.Format("SetDebugAudioRecording on local microphone: name={0} id={1} state={2}",
+                    micToSelect.DisplayName, micToSelect.Id, enable));
+             }
+         }
 
         public void SetSelectedLocalMicrophone(LocalMicrophoneModel mic)
         {
@@ -423,6 +462,7 @@ namespace VidyoConnector.ViewModel
                 LocalMicrophones.Select(x =>
                     {
                         x.IsStreamingAudio = false;
+                        x.IsDebugAudioRecording = false;
                         return x;
                     })
                     .ToList();
@@ -466,6 +506,11 @@ namespace VidyoConnector.ViewModel
             {
                 SetSelectedAudioContent(mic);
             }
+        }
+
+        public LocalMicrophoneModel GetSelectedLocalMicrophone()
+        {
+            return LocalMicrophones.FirstOrDefault(x => x.IsStreamingAudio);
         }
 
         private void SelectLocalMicrophone()
@@ -1036,6 +1081,21 @@ namespace VidyoConnector.ViewModel
             }
         }
 
+
+        private bool _enableAudioRecording;
+        public bool EnableDebugAudioRecording
+        {
+            get { return _enableAudioRecording; }
+            set
+            {
+                _enableAudioRecording = value;
+                Log.InfoFormat("Set Audio Recording mode={0}", value);
+                OnPropertyChanged();
+
+                CommandToggleDebugAudioRecording.Execute(null);
+            }
+        }
+
         private bool _showStats;
         public bool ShowStats
         {
@@ -1259,7 +1319,7 @@ namespace VidyoConnector.ViewModel
         private void ShowAbout()
         {
             MessageBox.Show(
-                "VidyoClient-WinSDK Version " + GetApplicationVersion() + "\r\n\r\nCopyright © 2017-2025 Vidyo, Inc. All rights reserved.",
+                "VidyoClient-WinSDK Version " + GetApplicationVersion() + "\r\n\r\nCopyright © 2017-2026 Vidyo, Inc. All rights reserved.",
                 "About VidyoConnector", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -1278,6 +1338,15 @@ namespace VidyoConnector.ViewModel
                 _connector.DisableDebug();
                 Log.Info("Debug mode enabled");
             }
+        }
+
+        private void ToggleDebugAudioRecording()
+        {
+            if (_connector == null)
+            {
+                return;
+            }
+            SetDebugAudioRecording(EnableDebugAudioRecording);
         }
 
         private void ToggleStats()
@@ -1439,6 +1508,9 @@ namespace VidyoConnector.ViewModel
 
         private ICommand _commandToggleDebug;
         public ICommand CommandToggleDebug { get { return GetCommand(ref _commandToggleDebug, x => ToggleDebug()); } }
+
+        private ICommand _commandToggleDebugAudioRecording;
+        public ICommand CommandToggleDebugAudioRecording { get { return GetCommand(ref _commandToggleDebugAudioRecording, x => ToggleDebugAudioRecording()); } }
 
         private ICommand _commandToggleStats;
         public ICommand CommandToggleStats { get { return GetCommand(ref _commandToggleStats, x => ToggleStats()); } }

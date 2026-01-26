@@ -1,0 +1,73 @@
+﻿<Window x:Class="VidyoConnector.VidyoMicrophoneOptions"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VidyoConnector"
+        mc:Ignorable="d"
+        Title="Vidyo Microphone Options" ResizeMode="NoResize" Height="200" Width="600">
+    <Grid Background="#4CDEDEDE">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="90*"/>
+            <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="25*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="75*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="5*"/>
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="GridMicrophoneName" Grid.Column="1" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="0*"/>
+                <ColumnDefinition Width="30*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label x:Name="LabelMicrophone" Content="Selected Microphone: " Grid.Row="1" Grid.Column="1" Foreground="#FF13253B" FontSize="12" FontWeight="Bold"/>
+            <Label x:Name="LabelSelectedMicrophoneName" Content="{Binding SelectedMicrophoneName}" Grid.Row="1" Grid.Column="3" Foreground="#FF13253B" FontSize="12" FontWeight="Bold"/>
+        </Grid>
+        
+        
+        <Grid x:Name="GridMicrophoneOptions" Grid.Column="1" Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="0*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="20*"/>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="20*"/>
+                <RowDefinition Height="5*"/>
+            </Grid.RowDefinitions>
+
+            <Label x:Name="LabelVolume" Content="Volume" Grid.Row="1" Grid.Column="1" Foreground="#FF13253B" FontSize="12" FontWeight="Bold"/>
+            <TextBox x:Name="TextBoxVolume" IsEnabled="{Binding ElementName=CheckboxVolume, Path=IsChecked}" LostFocus="VolumeTextBox_LostFocus" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="1" Text="{Binding VolumeText, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,5"/>
+            <CheckBox x:Name="CheckboxVolume" IsChecked="{Binding SetVolume}" Grid.Row="1" Grid.Column="5" Foreground="#FF666666" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <Label x:Name="LabelAutoGain" Content="Auto Gain" Grid.Row="3" Grid.Column="1" Foreground="#FF13253B" FontSize="12" FontWeight="Bold"/>
+            <TextBox x:Name="TextBoxAutoGain" IsEnabled="{Binding ElementName=CheckboxAutoGain, Path=IsChecked}" LostFocus="AutoGainTextBox_LostFocus" Grid.Row="3" Grid.Column="3" Grid.ColumnSpan="1" Text="{Binding AutoGainText, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,5"/>
+            <CheckBox x:Name="CheckboxAutoGain" IsChecked="{Binding SetAutoGain}" Grid.Row="3" Grid.Column="5" Foreground="#FF666666" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+
+        <Button x:Name="MicrophoneApplyOptions" Content="Apply" FontSize="10" Grid.Column="1" Grid.ColumnSpan="1" Grid.Row="5" Foreground="White" Background="#FF83C36D" Click="ButtonApplyMicrophoneOptions_Click">
+            <Button.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5"/>
+                </Style>
+            </Button.Resources>
+        </Button>
+    </Grid>
+</Window>

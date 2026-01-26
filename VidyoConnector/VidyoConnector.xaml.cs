@@ -22,6 +22,7 @@ namespace VidyoConnector
         VidyoConferenceSharing conferenceShareWindow;
         VidyoProductInfo productInfo;
         VidyoCameraControl cameraControl;
+        VidyoMicrophoneOptions microphoneOptions;
 
         public MainWindow()
         {
@@ -44,6 +45,7 @@ namespace VidyoConnector
 
             productInfo = new VidyoProductInfo(((VidyoConnectorViewModel)DataContext).GetApplicationVersion());
             cameraControl = new VidyoCameraControl();
+            microphoneOptions = new VidyoMicrophoneOptions(DataContext);
         }
 
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
@@ -238,6 +240,7 @@ namespace VidyoConnector
             cameraControl.SetSelectedLocalCamera(((VidyoConnectorViewModel)DataContext).GetSelectedLocalCamera());
             cameraControl.Show();
         }
+
         private void MenuItem_SetProductInfo(object sender, RoutedEventArgs e)
         {
             productInfo.setProductInfo = ((VidyoConnectorViewModel)DataContext).SetProductInfo;
@@ -248,6 +251,12 @@ namespace VidyoConnector
         {
             if (conferenceShareWindow.Init())
                 conferenceShareWindow.Show();
+        }
+
+        private void MenuItem_MicrophoneOptions(object sender, RoutedEventArgs e)
+        {
+            microphoneOptions.Init();
+            microphoneOptions.Show();
         }
 
         private void MenuItemVirtualAudioContent_OnClick(object sender, RoutedEventArgs e)

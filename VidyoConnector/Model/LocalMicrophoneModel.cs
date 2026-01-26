@@ -60,5 +60,18 @@ namespace VidyoConnector.Model
         /// Microphone is available to share content if it is not streaming audio OR selected microphone is 'NONE'.
         /// </summary>
         public bool CanShareContent { get { return !IsStreamingAudio || Object == null; } }
+
+        private bool _isDebugAudioRecording;
+        /// <summary>
+        /// Indicates whether this microphone is currently recording.
+        /// </summary>
+        public bool IsDebugAudioRecording
+        {
+            get { return _isDebugAudioRecording; }
+            set
+            {
+                _isDebugAudioRecording= value;
+            }
+        }
     }
 }
